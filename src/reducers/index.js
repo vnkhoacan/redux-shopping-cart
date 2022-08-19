@@ -1,12 +1,15 @@
-import { ADD_PRODUCT_TO_CART, DELETE_PRODUCT_FROM_CART, DECREASE_PRODUCT_QUANTITY, INCREASE_PRODUCT_QUANTITY, CHECKOUT_CART } from '../constants/ActionTypes';
+import {
+    ADD_PRODUCT_TO_CART,
+    DELETE_PRODUCT_FROM_CART,
+    DECREASE_PRODUCT_QUANTITY,
+    INCREASE_PRODUCT_QUANTITY,
+    CHECKOUT_CART,
+    GET_ALL_PRODUCTS,
+    GET_CART
+} from '../constants/ActionTypes';
 
 const initialState = {
-    products: [
-        { id: '1', title: 'Gaming Mouse', price: 29.99 },
-        { id: '2', title: 'Harry Potter 3', price: 9.99 },
-        { id: '3', title: 'Used plastic bottle', price: 0.99 },
-        { id: '4', title: 'Half-dried plant', price: 2.99 }
-    ],
+    products: [],
     cart: [],
     cartTotal: 0
 }
@@ -17,56 +20,91 @@ const shopReducer = (state = initialState, action) => {
     let updatedItem;
     let updatedCartTotal;
     switch (action.type) {
-        case INCREASE_PRODUCT_QUANTITY:
-        case ADD_PRODUCT_TO_CART:
-            updatedCart = [...state.cart];
-            updatedCartTotal = [state.cartTotal];
-            updatedCartIndex = updatedCart.findIndex(
-                item => item.id === action.payload.id
-            );
+        case GET_ALL_PRODUCTS:
+            return {
+                ...state,
+                products: action.payload
+            };
+        case GET_CART:
+            updatedCartTotal = 0;
+            action.payload.map((item) => {
+                updatedCartTotal = updatedCartTotal + (item.price*item.quantity);
+                return item;
+            })
 
-            if (updatedCartIndex < 0) {
-                updatedCart.push({...action.payload, quantity: 1 });
-            } else {
-                updatedItem = {
-                    ...updatedCart[updatedCartIndex]
-                };
-                updatedItem.quantity++;
-                updatedCart[updatedCartIndex] = updatedItem;
-            }
+            return {
+                ...state,
+                cart: action.payload,
+                cartTotal: updatedCartTotal.toFixed(2)
+            };
+        case ADD_PRODUCT_TO_CART:
+            let isCreate = true;
+            updatedCart = state.cart;
+            updatedCartTotal = state.cartTotal;
             updatedCartTotal = Number(updatedCartTotal) + Number(action.payload.price);
-            return {...state, cart: updatedCart, cartTotal: updatedCartTotal.toFixed(2)};
+            updatedCart.map((item) => {
+                if(item.id === action.payload.id) {
+                    item.quantity++;
+                    isCreate = false;
+                }
+                return item;
+            })
+            if(isCreate) {
+                updatedCart = [...updatedCart, action.payload];
+            }
+            return {
+                ...state,
+                cart: updatedCart,
+                cartTotal: updatedCartTotal.toFixed(2)
+            };
         case DELETE_PRODUCT_FROM_CART:
             updatedCart = [...state.cart];
             updatedCartTotal = [state.cartTotal];
-            updatedCartIndex = updatedCart.findIndex(
-                item => item.id === action.payload
-            )
-            updatedItem = {
-                ...updatedCart[updatedCartIndex]
+            updatedItem = updatedCart.find((item) => item.id === action.payload)
+            updatedCartTotal = updatedCartTotal - (updatedItem.price * updatedItem.quantity);
+            updatedCart = updatedCart.filter((item) => item.id !== action.payload)
+            return {
+                ...state,
+                cart: updatedCart,
+                cartTotal: updatedCartTotal.toFixed(2)
             };
-            updatedCartTotal = Number(updatedCartTotal) - (Number(updatedItem.quantity)*Number(updatedItem.price));
-            updatedCart.splice(updatedCartIndex, 1);
-            return {...state, cart: updatedCart, cartTotal: updatedCartTotal.toFixed(2)};
+        case INCREASE_PRODUCT_QUANTITY:
+            updatedCart = state.cart;
+            updatedCartTotal = state.cartTotal;
+            updatedCartTotal = Number(updatedCartTotal) + Number(action.payload.price);
+            updatedCart.map((item) => {
+                if(item.id === action.payload.id) {
+                    item.quantity = action.payload.quantity;
+                }
+                return item;
+            })
+            return {
+                ...state,
+                cart: updatedCart,
+                cartTotal: updatedCartTotal.toFixed(2)
+            };
         case DECREASE_PRODUCT_QUANTITY:
-            updatedCart = [...state.cart];
-            updatedCartTotal = [state.cartTotal];
+            updatedCart = state.cart;
+            updatedCartTotal = state.cartTotal;
+            updatedCartTotal = Number(updatedCartTotal) - Number(action.payload.price);
             updatedCartIndex = updatedCart.findIndex(
-                item => item.id === action.payload
+                item => item.id === action.payload.id
             )
-            updatedItem = {
-                ...updatedCart[updatedCartIndex]
-            }
-            updatedItem.quantity--;
-            if(updatedItem.quantity <= 0) {
+            if(action.payload.quantity <= 0) {
                 updatedCart.splice(updatedCartIndex, 1);
             } else {
+                updatedItem = {
+                    ...updatedCart[updatedCartIndex]
+                }
                 updatedCart[updatedCartIndex] = updatedItem;
             }
-            updatedCartTotal = Number(updatedCartTotal) - Number(updatedItem.price);
             return {...state, cart: updatedCart, cartTotal: updatedCartTotal.toFixed(2)};
         case CHECKOUT_CART:
-            return initialState;
+            return {
+                ...state,
+                cart: [],
+                cartTotal: 0
+            };
         default:
             return state;
     }

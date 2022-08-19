@@ -1,17 +1,21 @@
-import React from "react";
-import { addProductToCart } from '../actions';
+import React, { useEffect } from "react";
+import { addProductToCart, getAllProducts } from '../actions';
 import ProductItem from "../components/ProductItem";
 import ProductList from "../components/ProductList";
 import { connect } from "react-redux";
 
-const ProductsContainer = ({products, addProductToCart}) => {
+const ProductsContainer = ({products, cart, getAllProducts, addProductToCart}) => {
+    useEffect(() => {
+        getAllProducts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     return (
             <ProductList title="PRODUCT LIST">
                 {products.map(product => 
                     <ProductItem
                         key={product.id}
                         product={product}
-                        onAddToCart={() => addProductToCart(product)}
+                        onAddToCart={() => addProductToCart({product, cart})}
                     />
                 )}
             </ProductList>
@@ -19,13 +23,17 @@ const ProductsContainer = ({products, addProductToCart}) => {
 }
 
 const mapStateToProps = state => {
-    return {products: state.products}
+    return {
+        products: state.products,
+        cart: state.cart
+    }
     
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        addProductToCart: product => dispatch(addProductToCart(product))
+        getAllProducts: () => dispatch(getAllProducts()),
+        addProductToCart: ({product, cart}) => dispatch(addProductToCart({product, cart}))
     };
 };
 

@@ -10,7 +10,9 @@ import {
 
 const initialState = {
     products: [],
+    isFetchingProducts: true,
     cart: [],
+    isFetchingCart: true,
     cartTotal: 0
 }
 
@@ -23,7 +25,8 @@ const shopReducer = (state = initialState, action) => {
         case GET_ALL_PRODUCTS:
             return {
                 ...state,
-                products: action.payload
+                products: action.payload,
+                isFetchingProducts: false,
             };
         case GET_CART:
             updatedCartTotal = 0;
@@ -35,7 +38,8 @@ const shopReducer = (state = initialState, action) => {
             return {
                 ...state,
                 cart: action.payload,
-                cartTotal: updatedCartTotal.toFixed(2)
+                cartTotal: updatedCartTotal.toFixed(2),
+                isFetchingCart: false,
             };
         case ADD_PRODUCT_TO_CART:
             let isCreate = true;

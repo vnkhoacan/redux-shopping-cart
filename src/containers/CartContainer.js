@@ -13,13 +13,15 @@ import { connect } from "react-redux";
 const CartContainer = ({
     cart,
     cartTotal,
+    isFetchingCart,
     getCart,
     decreaseProductQuantity,
     increaseProductQuantity,
     deleteProductFromCart,
     checkout
 }) => {
-    let cartLength = cart.length;
+    const cartLength = cart.length;
+    const isEmpty = cart.length === 0;
     useEffect(() => {
         getCart();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -27,7 +29,9 @@ const CartContainer = ({
 
     return (
         <ProductList title="MY CART">
-            {cart.map(item => 
+            {isEmpty 
+            ? (isFetchingCart ? <p>Loading....</p> : <p>Empty</p>)
+            : cart.map(item =>
                 <CartItem
                     key={item.id}
                     cart={item}
@@ -56,7 +60,8 @@ const CartContainer = ({
 const mapStateToProps = (state) => {
     return {
         cart: state.cart,
-        cartTotal: state.cartTotal
+        cartTotal: state.cartTotal,
+        isFetchingCart: state.isFetchingCart
     }
 }
 

@@ -4,14 +4,23 @@ import ProductItem from "../components/ProductItem";
 import ProductList from "../components/ProductList";
 import { connect } from "react-redux";
 
-const ProductsContainer = ({products, cart, getAllProducts, addProductToCart}) => {
+const ProductsContainer = ({
+    products,
+    cart,
+    isFetchingProducts,
+    getAllProducts,
+    addProductToCart
+}) => {
+    const isEmpty = products.length === 0;
     useEffect(() => {
         getAllProducts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     return (
             <ProductList title="PRODUCT LIST">
-                {products.map(product => 
+                {isEmpty
+                ? (isFetchingProducts ? <p>Loading.....</p> : <p>Empty</p>)
+                : products.map(product =>
                     <ProductItem
                         key={product.id}
                         product={product}
@@ -25,7 +34,8 @@ const ProductsContainer = ({products, cart, getAllProducts, addProductToCart}) =
 const mapStateToProps = state => {
     return {
         products: state.products,
-        cart: state.cart
+        cart: state.cart,
+        isFetchingProducts: state.isFetchingProducts
     }
     
 }
